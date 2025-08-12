@@ -1,0 +1,908 @@
+@page "/Chat"
+@model ChatApp.Pages.ChatModel
+@{
+    ViewData["Title"] = "Chat";
+}
+
+<div class="container-fluid bg-gradient-primary text-white py-4 mb-4 shadow-lg">
+    <div class="row">
+        <div class="col text-center">
+            <h2 class="fw-bold" style="letter-spacing: 3px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                <i class="fas fa-comments me-3"></i>MetCHAT
+            </h2>
+            <p class="mb-0 opacity-75">Metal Yapı Mesajlaşma Platformu</p>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <div class="col-12 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-3">
+                                <div class="rounded-circle bg-gradient-primary d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; color: white; font-weight: bold; font-size: 1.2rem;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="fw-bold text-primary">Giriş Yapan:</span>
+                                <span id="currentUserName" class="ms-2 fw-bold"></span>
+                                <span class="ms-2 text-muted">(Kod: <span id="currentUserCode" class="fw-bold text-primary"></span>)</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="showAddFriendModal()">
+                                <i class="fas fa-user-plus me-1"></i> Arkadaş Ekle
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm position-relative" onclick="showFriendRequestsModal()" id="friendRequestsBtn">
+                                <i class="fas fa-bell me-1"></i> Gelen İstekler
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger pulse" id="friendRequestsBadge" style="display: none;">
+                                    0
+                                </span>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-1"></i> Çıkış Yap
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Sol Taraf - Arkadaş Listesi -->
+        <div class="col-md-3 border-end">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>Arkadaşlarım
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush" id="friendsList">
+                        <!-- Dinamik olarak yüklenecek -->
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-outline-primary btn-sm w-100" onclick="showAddUserModal()">
+                        <i class="fas fa-plus me-1"></i> Yeni Kullanıcı Ekle
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Taraf - Chat Alanı -->
+        <div class="col-md-9">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comment me-2"></i>
+                        <span id="selectedUserName">Chat</span>
+                        <small id="selectedUserStatus" class="ms-2 opacity-75"></small>
+                    </h5>
+                </div>
+                <div class="card-body" style="height: 400px; overflow-y: auto;" id="chatMessages">
+                    <div class="text-center text-muted mt-5">
+                        <i class="fas fa-comments fa-4x mb-3 opacity-50"></i>
+                        <p class="fw-bold">Mesajlaşmaya başlamak için bir arkadaş seçin</p>
+                        <small class="opacity-75">Sol taraftaki arkadaş listesinden birini seçin</small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" id="messageContent" placeholder="Mesajınızı yazın..." />
+                            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="previewImage(event)" />
+                            <div id="imagePreview" class="mt-2" style="display: none;">
+                                <img id="previewImg" class="img-thumbnail rounded" style="max-width: 200px; max-height: 200px;" />
+                                <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="removeImage()">
+                                    <i class="fas fa-times me-1"></i> Kaldır
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-secondary" onclick="document.getElementById('imageInput').click()" title="Fotoğraf Ekle">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <button class="btn btn-primary flex-grow-1" onclick="sendMessage()">
+                                    <i class="fas fa-paper-plane me-1"></i> Gönder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Yeni Kullanıcı Ekleme Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı Ekle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="newUserName" class="form-label fw-bold">
+                        <i class="fas fa-user me-2"></i>Kullanıcı Adı
+                    </label>
+                    <input type="text" class="form-control" id="newUserName" placeholder="Kullanıcı adını girin">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> İptal
+                </button>
+                <button type="button" class="btn btn-primary" onclick="addNewUser()">
+                    <i class="fas fa-plus me-1"></i> Ekle
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Arkadaş Ekleme Modal -->
+<div class="modal fade" id="addFriendModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>Arkadaş Ekle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="friendCode" class="form-label fw-bold">
+                        <i class="fas fa-key me-2"></i>Arkadaş Kodunu Girin
+                    </label>
+                    <input type="text" class="form-control" id="friendCode" placeholder="6 haneli kodu girin (örn: ABC123)">
+                    <div class="form-text">
+                        <i class="fas fa-info-circle me-1"></i>Arkadaşınızın profilinde görünen 6 haneli kodu girin.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> İptal
+                </button>
+                <button type="button" class="btn btn-primary" onclick="sendFriendRequest()">
+                    <i class="fas fa-paper-plane me-1"></i> Arkadaşlık İsteği Gönder
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Arkadaşlık İstekleri Modal -->
+<div class="modal fade" id="friendRequestsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-bell me-2"></i>Arkadaşlık İstekleri
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="friendRequestsList">
+                    <!-- Dinamik olarak yüklenecek -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: var(--gradient-primary) !important;
+}
+
+.message-item .bg-primary {
+    background: var(--gradient-primary) !important;
+}
+
+.message-item .bg-light {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+}
+
+.list-group-item {
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.list-group-item:hover {
+    border-left-color: var(--primary-color);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.list-group-item.active {
+    border-left-color: var(--primary-color);
+    background: var(--gradient-primary);
+}
+
+.avatar .rounded-circle {
+    box-shadow: var(--shadow-light);
+}
+
+.badge.pulse {
+    animation: pulse 2s infinite;
+}
+
+@@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+.btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+</style>
+
+@section Scripts {
+    <script>
+        let selectedUserId = null;
+        let selectedUserName = null;
+        let currentUserId = null;
+        let currentUserName = null;
+        let currentSessionId = null;
+        let currentUserCode = null;
+        let unreadCounts = {};
+
+        // API base URL'ini dinamik olarak al
+        function getApiBaseUrl() {
+            return window.location.protocol + '//' + window.location.host;
+        }
+
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        function checkLogin() {
+            currentUserId = parseInt(localStorage.getItem('currentUserId'));
+            currentUserName = localStorage.getItem('currentUserName');
+            currentSessionId = localStorage.getItem('currentSessionId');
+            currentUserCode = localStorage.getItem('currentUserCode');
+
+            // Kullanıcı bilgisi yoksa veya eksikse, localStorage temizle ve Login'e yönlendir
+            if (!currentUserId || !currentUserName) {
+                localStorage.removeItem('currentUserId');
+                localStorage.removeItem('currentUserName');
+                localStorage.removeItem('currentSessionId');
+                localStorage.removeItem('currentUserCode');
+                window.location.href = '/Login';
+                return;
+            }
+
+            // API'den kullanıcıyı doğrula
+            fetch(getApiBaseUrl() + `/api/ChatApi/user/${currentUserId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        // Kullanıcı yoksa localStorage temizle ve Login'e yönlendir
+                        localStorage.removeItem('currentUserId');
+                        localStorage.removeItem('currentUserName');
+                        localStorage.removeItem('currentSessionId');
+                        localStorage.removeItem('currentUserCode');
+                        window.location.href = '/Login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(user => {
+                    if (!user || user.name !== currentUserName) {
+                        // Kullanıcı adı eşleşmiyorsa da yönlendir
+                        localStorage.removeItem('currentUserId');
+                        localStorage.removeItem('currentUserName');
+                        localStorage.removeItem('currentSessionId');
+                        localStorage.removeItem('currentUserCode');
+                        window.location.href = '/Login';
+                        return;
+                    }
+                    // Devam et...
+                    document.getElementById('currentUserName').textContent = currentUserName;
+                    document.getElementById('currentUserCode').textContent = currentUserCode || 'Yükleniyor...';
+                    updateUserStatus(true);
+                });
+        }
+
+        function logout() {
+            if (currentUserId) {
+                updateUserStatus(false);
+            }
+            localStorage.removeItem('currentUserId');
+            localStorage.removeItem('currentUserName');
+            localStorage.removeItem('currentSessionId');
+            localStorage.removeItem('currentUserCode');
+            window.location.href = '/Login';
+        }
+
+        function updateUserStatus(isOnline) {
+            if (!currentUserId) return;
+            
+            fetch(getApiBaseUrl() + '/api/ChatApi/user/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: currentUserId,
+                    isOnline: isOnline
+                })
+            }).catch(error => console.error('Durum güncellenirken hata:', error));
+        }
+
+        function selectUser(userId, userName) {
+            selectedUserId = userId;
+            selectedUserName = userName;
+            
+            // Önceki seçimi temizle
+            document.querySelectorAll('#friendsList .list-group-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Yeni seçimi işaretle
+            const selectedItem = document.querySelector(`[data-user-id="${userId}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+                // Bildirim sayısını temizle
+                const badge = selectedItem.querySelector('.badge');
+                if (badge) badge.remove();
+            }
+            
+            document.getElementById('selectedUserName').textContent = userName;
+            document.getElementById('selectedUserStatus').textContent = '';
+            
+            // Mesajları okundu olarak işaretle
+            markMessagesAsRead(userId);
+            
+            loadMessages();
+        }
+
+        function markMessagesAsRead(senderId) {
+            if (!currentUserId || !senderId) return;
+            
+            fetch(getApiBaseUrl() + '/api/ChatApi/mark-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: currentUserId,
+                    senderId: senderId
+                })
+            }).then(() => {
+                // Bildirim sayısını güncelle
+                if (unreadCounts[senderId]) {
+                    delete unreadCounts[senderId];
+                    updateNotificationBadge(senderId, 0);
+                }
+            }).catch(error => console.error('Mesajlar okundu olarak işaretlenirken hata:', error));
+        }
+
+        function showAddUserModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
+            modal.show();
+        }
+
+        function showAddFriendModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addFriendModal'));
+            modal.show();
+        }
+
+        function showFriendRequestsModal() {
+            loadFriendRequests();
+            loadFriendRequestsCount();
+            const modal = new bootstrap.Modal(document.getElementById('friendRequestsModal'));
+            modal.show();
+        }
+
+        function addNewUser() {
+            const userName = document.getElementById('newUserName').value;
+            if (!userName) {
+                showAlert('Lütfen kullanıcı adını girin!', 'warning');
+                return;
+            }
+            
+            const user = {
+                name: userName,
+                sessionId: generateSessionId()
+            };
+            
+            fetch(getApiBaseUrl() + '/api/ChatApi/user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(user)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('newUserName').value = '';
+                bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+                loadFriends();
+                showAlert('Kullanıcı başarıyla eklendi!', 'success');
+            })
+            .catch(error => {
+                showAlert('Kullanıcı eklenirken hata oluştu: ' + error.message, 'danger');
+            });
+        }
+
+        function sendFriendRequest() {
+            const friendCode = document.getElementById('friendCode').value.toUpperCase();
+            if (!friendCode || friendCode.length !== 6) {
+                showAlert('Lütfen geçerli bir 6 haneli kod girin!', 'warning');
+                return;
+            }
+            
+            // Önce kodu ile kullanıcıyı bul
+            fetch(getApiBaseUrl() + `/api/ChatApi/user/by-code/${friendCode}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Kullanıcı bulunamadı.');
+                }
+                return response.json();
+            })
+            .then(user => {
+                if (user.id === currentUserId) {
+                    showAlert('Kendinize arkadaşlık isteği gönderemezsiniz!', 'warning');
+                    return;
+                }
+                
+                // Arkadaşlık isteği gönder
+                return fetch(getApiBaseUrl() + '/api/ChatApi/friend-request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        senderId: currentUserId,
+                        receiverId: user.id
+                    })
+                });
+            })
+            .then(response => {
+                if (response && !response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(text);
+                    });
+                }
+                if (response) {
+                    document.getElementById('friendCode').value = '';
+                    bootstrap.Modal.getInstance(document.getElementById('addFriendModal')).hide();
+                    showAlert('Arkadaşlık isteği gönderildi!', 'success');
+                }
+            })
+            .catch(error => {
+                showAlert('Arkadaşlık isteği gönderilirken hata oluştu: ' + error.message, 'danger');
+            });
+        }
+
+        function loadFriendRequests() {
+            if (!currentUserId) return;
+            
+            fetch(getApiBaseUrl() + `/api/ChatApi/friend-requests?userId=${currentUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                const requestsList = document.getElementById('friendRequestsList');
+                requestsList.innerHTML = '';
+                
+                if (data.length === 0) {
+                    requestsList.innerHTML = '<div class="text-center text-muted py-4"><i class="fas fa-inbox fa-3x mb-3 opacity-50"></i><p>Bekleyen arkadaşlık isteğiniz yok.</p></div>';
+                    return;
+                }
+                
+                data.forEach(request => {
+                    const requestDiv = document.createElement('div');
+                    requestDiv.className = 'card mb-2 shadow-sm';
+                    requestDiv.innerHTML = `
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">${request.sender.name}</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-key me-1"></i>Kod: ${request.sender.uniqueCode}
+                                    </small>
+                                </div>
+                                <div>
+                                    <button class="btn btn-success btn-sm me-1" onclick="acceptFriendRequest(${request.id})">
+                                        <i class="fas fa-check me-1"></i> Kabul Et
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" onclick="rejectFriendRequest(${request.id})">
+                                        <i class="fas fa-times me-1"></i> Reddet
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    requestsList.appendChild(requestDiv);
+                });
+            })
+            .catch(error => console.error('Arkadaşlık istekleri yüklenirken hata:', error));
+        }
+
+        function acceptFriendRequest(requestId) {
+            fetch(getApiBaseUrl() + `/api/ChatApi/friend-request/${requestId}/accept`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    loadFriendRequests();
+                    loadFriends();
+                    loadFriendRequestsCount();
+                    showAlert('Arkadaşlık isteği kabul edildi!', 'success');
+                } else {
+                    throw new Error('İstek kabul edilemedi.');
+                }
+            })
+            .catch(error => {
+                showAlert('Arkadaşlık isteği kabul edilirken hata oluştu: ' + error.message, 'danger');
+            });
+        }
+
+        function rejectFriendRequest(requestId) {
+            fetch(getApiBaseUrl() + `/api/ChatApi/friend-request/${requestId}/reject`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    loadFriendRequests();
+                    loadFriendRequestsCount();
+                    showAlert('Arkadaşlık isteği reddedildi!', 'info');
+                } else {
+                    throw new Error('İstek reddedilemedi.');
+                }
+            })
+            .catch(error => {
+                showAlert('Arkadaşlık isteği reddedilirken hata oluştu: ' + error.message, 'danger');
+            });
+        }
+
+        function loadFriends() {
+            if (!currentUserId) return;
+            
+            fetch(getApiBaseUrl() + `/api/ChatApi/friends?userId=${currentUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                const friendsList = document.getElementById('friendsList');
+                friendsList.innerHTML = '';
+                
+                if (data.length === 0) {
+                    friendsList.innerHTML = '<div class="text-center text-muted p-4"><i class="fas fa-users fa-3x mb-3 opacity-50"></i><p class="fw-bold">Henüz arkadaşınız yok.</p><small class="opacity-75">Arkadaş eklemek için kod kullanın.</small></div>';
+                    return;
+                }
+                
+                data.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                    userDiv.setAttribute('data-user-id', user.id);
+                    
+                    const avatar = user.avatar ? 
+                        `<img src="${user.avatar}" class="rounded-circle" width="40" height="40" alt="${user.name}">` :
+                        `<div class="rounded-circle bg-gradient-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; color: white; font-weight: bold;">${user.name.substring(0, 1).toUpperCase()}</div>`;
+                    
+                    // Bildirim sayısını al
+                    const unreadCount = unreadCounts[user.id] || 0;
+                    const badge = unreadCount > 0 ? `<span class="badge bg-danger rounded-pill pulse">${unreadCount}</span>` : '';
+                    
+                    userDiv.innerHTML = `
+                        <div class="d-flex align-items-center flex-grow-1" onclick="selectUser(${user.id}, '${user.name}')" style="cursor: pointer;">
+                            <div class="avatar me-3 ${user.isOnline ? 'online' : 'offline'}">
+                                ${avatar}
+                            </div>
+                            <div>
+                                <div class="fw-bold">${user.name}</div>
+                                <small class="text-muted">
+                                    <i class="fas fa-key me-1"></i>Kod: ${user.uniqueCode || 'N/A'} | 
+                                    <i class="fas fa-circle me-1 ${user.isOnline ? 'text-success' : 'text-danger'}"></i>${user.isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            ${badge}
+                            <button class="btn btn-outline-danger btn-sm ms-2" onclick="deleteUser(${user.id}, '${user.name}')" title="Kullanıcıyı Sil">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    friendsList.appendChild(userDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Arkadaşlar yüklenirken hata:', error);
+                const friendsList = document.getElementById('friendsList');
+                friendsList.innerHTML = '<div class="text-center text-danger p-4"><i class="fas fa-exclamation-triangle fa-3x mb-3"></i><p class="fw-bold">Arkadaşlar yüklenirken hata oluştu.</p></div>';
+            });
+        }
+
+        function loadUnreadCounts() {
+            if (!currentUserId) return;
+            
+            fetch(getApiBaseUrl() + `/api/ChatApi/unread-count?userId=${currentUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                unreadCounts = data;
+                // Mevcut kullanıcı listesini güncelle
+                Object.keys(unreadCounts).forEach(senderId => {
+                    updateNotificationBadge(parseInt(senderId), unreadCounts[senderId]);
+                });
+            })
+            .catch(error => console.error('Okunmamış mesaj sayısı alınırken hata:', error));
+        }
+
+        function loadFriendRequestsCount() {
+            if (!currentUserId) return;
+            
+            fetch(getApiBaseUrl() + `/api/ChatApi/friend-requests?userId=${currentUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('friendRequestsBadge');
+                if (data.length > 0) {
+                    badge.textContent = data.length;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(error => console.error('Arkadaşlık istekleri sayısı alınırken hata:', error));
+        }
+
+        function updateNotificationBadge(userId, count) {
+            const userItem = document.querySelector(`[data-user-id="${userId}"]`);
+            if (!userItem) return;
+            
+            let badge = userItem.querySelector('.badge');
+            if (count > 0) {
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'badge bg-danger rounded-pill pulse';
+                    userItem.appendChild(badge);
+                }
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                if (badge) {
+                    badge.remove();
+                }
+            }
+        }
+
+        function deleteUser(userId, userName) {
+            if (!confirm(`"${userName}" kullanıcısını silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz ve tüm mesajlar silinecektir.`)) {
+                return;
+            }
+            
+            fetch(getApiBaseUrl() + `/api/ChatApi/user/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Kullanıcı listesini yenile
+                    loadFriends();
+                    // Eğer silinen kullanıcı seçiliyse, seçimi temizle
+                    if (selectedUserId === userId) {
+                        selectedUserId = null;
+                        selectedUserName = null;
+                        document.getElementById('selectedUserName').textContent = 'Chat';
+                        document.getElementById('chatMessages').innerHTML = '<div class="text-center text-muted mt-5"><p>Mesajlaşmaya başlamak için bir arkadaş seçin</p></div>';
+                    }
+                    showAlert(`"${userName}" kullanıcısı başarıyla silindi!`, 'success');
+                } else {
+                    throw new Error('Kullanıcı silinemedi.');
+                }
+            })
+            .catch(error => {
+                showAlert('Kullanıcı silinirken hata oluştu: ' + error.message, 'danger');
+            });
+        }
+
+        function sendMessage() {
+            if (!selectedUserId) {
+                showAlert('Lütfen bir arkadaş seçin!', 'warning');
+                return;
+            }
+            
+            const messageContent = document.getElementById('messageContent').value;
+            const imageFile = document.getElementById('imageInput').files[0];
+
+            if (!messageContent && !imageFile) {
+                showAlert('Lütfen mesaj veya fotoğraf ekleyin!', 'warning');
+                return;
+            }
+
+            const formData = new FormData();
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+            if (messageContent) {
+                formData.append('content', messageContent);
+            }
+            formData.append('senderId', currentUserId);
+            formData.append('receiverId', selectedUserId);
+
+            fetch(getApiBaseUrl() + '/api/ChatApi/message', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('messageContent').value = '';
+                document.getElementById('imagePreview').style.display = 'none';
+                document.getElementById('imageInput').value = '';
+                loadMessages();
+            })
+            .catch(error => {
+                showAlert('Mesaj gönderilirken hata oluştu: ' + error.message, 'danger');
+            });
+        }
+
+        function previewImage(event) {
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+
+            if (imageInput.files && imageInput.files[0]) {
+                const file = imageInput.files[0];
+                
+                // Dosya boyut kontrolü (100MB)
+                const maxFileSize = 100 * 1024 * 1024; // 100MB
+                if (file.size > maxFileSize) {
+                    showAlert('Dosya boyutu çok büyük. Maksimum dosya boyutu: 100MB', 'warning');
+                    imageInput.value = '';
+                    return;
+                }
+
+                // Dosya türü kontrolü
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert('Sadece resim dosyaları kabul edilir: jpg, jpeg, png, gif, bmp, webp', 'warning');
+                    imageInput.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.style.display = 'none';
+                previewImg.src = '';
+            }
+        }
+
+        function removeImage() {
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('previewImg').src = '';
+        }
+
+        function loadMessages() {
+            if (!selectedUserId) {
+                document.getElementById('chatMessages').innerHTML = '<div class="text-center text-muted mt-5"><p>Mesajlaşmaya başlamak için bir arkadaş seçin</p></div>';
+                return;
+            }
+            
+            fetch(getApiBaseUrl() + `/api/ChatApi/messages?userId=${currentUserId}&otherId=${selectedUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = '';
+                
+                if (data.length === 0) {
+                    chatMessages.innerHTML = '<div class="text-center text-muted mt-5"><i class="fas fa-comments fa-3x mb-3 opacity-50"></i><p>Bu arkadaşla henüz mesajlaşmadınız</p></div>';
+                    return;
+                }
+                
+                data.reverse().forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message-item mb-3';
+                    const isOwnMessage = message.senderId === currentUserId;
+                    const messageClass = isOwnMessage ? 'text-end' : 'text-start';
+                    
+                    let contentHtml = '';
+                    if (message.content) {
+                        contentHtml += `<div class="mb-2">${message.content}</div>`;
+                    }
+                    if (message.imageUrl) {
+                        contentHtml += `<div class="mt-2"><img src="${message.imageUrl}" class="img-fluid rounded shadow-sm" style="max-width: 300px; max-height: 300px;" alt="Fotoğraf" onerror="this.style.display='none'; console.log('Resim yüklenemedi:', '${message.imageUrl}');" /></div>`;
+                    }
+                    
+                    messageDiv.innerHTML = `
+                        <div class="${messageClass}">
+                            <div class="d-inline-block p-3 rounded shadow-sm ${isOwnMessage ? 'bg-gradient-primary text-white' : 'bg-light'}">
+                                <div class="fw-bold mb-1">
+                                    <i class="fas fa-user me-1"></i>${message.senderName}
+                                </div>
+                                ${contentHtml}
+                                <small class="${isOwnMessage ? 'text-white-50' : 'text-muted'}">
+                                    <i class="fas fa-clock me-1"></i>${new Date(message.timestamp).toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})}
+                                </small>
+                            </div>
+                        </div>
+                    `;
+                    chatMessages.appendChild(messageDiv);
+                });
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Mesajlar yüklenirken hata:', error);
+            });
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: var(--shadow-heavy);';
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : type === 'info' ? 'info-circle' : 'times-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLogin();
+            loadFriends();
+            loadUnreadCounts();
+            loadFriendRequestsCount();
+            
+            // Enter tuşu ile mesaj gönderme
+            document.getElementById('messageContent').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault(); // Yeni satır oluşturmasını engelle
+                    sendMessage();
+                }
+            });
+            
+            // Her 5 saniyede bir güncelle
+            setInterval(() => {
+                loadFriends();
+                loadUnreadCounts();
+                loadFriendRequestsCount();
+                if (selectedUserId) {
+                    loadMessages();
+                }
+            }, 5000);
+        });
+
+        // Sayfa kapatılırken kullanıcı durumunu güncelle
+        window.addEventListener('beforeunload', function() {
+            if (currentUserId) {
+                updateUserStatus(false);
+            }
+        });
+    </script>
+} 

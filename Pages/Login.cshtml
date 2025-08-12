@@ -1,0 +1,223 @@
+@page
+@model dynamic
+@{
+    ViewData["Title"] = "Giriş/Kayıt";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg">
+                <div class="card-header text-center py-4">
+                    <div class="mb-3">
+                        <i class="fas fa-comments fa-3x text-white"></i>
+                    </div>
+                    <h3 class="text-white mb-0 fw-bold">MetCHAT</h3>
+                    <p class="text-white-50 mb-0">Hoş geldiniz!</p>
+                </div>
+                <div class="card-body p-4">
+                    <ul class="nav nav-pills nav-fill mb-4" id="loginTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold" id="login-tab" data-bs-toggle="pill" data-bs-target="#login" type="button" role="tab">
+                                <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold" id="register-tab" data-bs-toggle="pill" data-bs-target="#register" type="button" role="tab">
+                                <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="loginTabContent">
+                        <div class="tab-pane fade show active" id="login" role="tabpanel">
+                            <div class="mb-3">
+                                <label for="loginUserName" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2"></i>Kullanıcı Adı
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="loginUserName" placeholder="Kullanıcı adınızı girin">
+                            </div>
+                            <button class="btn btn-primary btn-lg w-100 fw-bold" onclick="login()">
+                                <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                            </button>
+                        </div>
+                        <div class="tab-pane fade" id="register" role="tabpanel">
+                            <div class="mb-3">
+                                <label for="registerUserName" class="form-label fw-bold">
+                                    <i class="fas fa-user me-2"></i>Kullanıcı Adı
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="registerUserName" placeholder="Kullanıcı adınızı girin">
+                            </div>
+                            <button class="btn btn-success btn-lg w-100 fw-bold" onclick="register()">
+                                <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.nav-pills .nav-link {
+    border-radius: 10px;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+}
+
+.nav-pills .nav-link.active {
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-medium);
+}
+
+.nav-pills .nav-link:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--dark-color);
+}
+
+.nav-pills .nav-link:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.form-control-lg {
+    padding: 15px 20px;
+    font-size: 1.1rem;
+}
+
+.btn-lg {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+}
+</style>
+
+@section Scripts {
+    <script>
+        function getApiBaseUrl() {
+            return window.location.protocol + '//' + window.location.host;
+        }
+
+        // Sayfa yüklendiğinde localStorage'ı temizle
+        document.addEventListener('DOMContentLoaded', function() {
+            localStorage.removeItem('currentUserId');
+            localStorage.removeItem('currentUserName');
+            localStorage.removeItem('currentSessionId');
+            localStorage.removeItem('currentUserCode');
+        });
+
+        function login() {
+            const userName = document.getElementById('loginUserName').value;
+            if (!userName) {
+                showAlert('Lütfen kullanıcı adınızı girin!', 'warning');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Giriş yapılıyor...';
+            btn.disabled = true;
+            
+            fetch(getApiBaseUrl() + '/api/ChatApi/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: userName })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text);
+                }
+                return response.json();
+            })
+            .then(data => {
+                localStorage.setItem('currentUserId', data.id);
+                localStorage.setItem('currentUserName', data.name);
+                localStorage.setItem('currentSessionId', data.sessionId || '');
+                localStorage.setItem('currentUserCode', data.uniqueCode || '');
+                showAlert('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/Chat';
+                }, 1000);
+            })
+            .catch(error => {
+                showAlert('Girişte hata: ' + error.message, 'danger');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        function register() {
+            const userName = document.getElementById('registerUserName').value;
+            if (!userName) {
+                showAlert('Lütfen kullanıcı adınızı girin!', 'warning');
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="loading"></span> Kayıt yapılıyor...';
+            btn.disabled = true;
+            
+            fetch(getApiBaseUrl() + '/api/ChatApi/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: userName })
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text);
+                }
+                return response.json();
+            })
+            .then(data => {
+                localStorage.setItem('currentUserId', data.id);
+                localStorage.setItem('currentUserName', data.name);
+                localStorage.setItem('currentSessionId', data.sessionId || '');
+                localStorage.setItem('currentUserCode', data.uniqueCode || '');
+                showAlert('Kayıt başarılı! Yönlendiriliyorsunuz...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/Chat';
+                }, 1000);
+            })
+            .catch(error => {
+                showAlert('Kayıt olurken hata: ' + error.message, 'danger');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Enter tuşu ile giriş/kayıt
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('loginUserName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+            document.getElementById('registerUserName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') register();
+            });
+        });
+    </script>
+}

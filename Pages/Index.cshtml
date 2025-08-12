@@ -1,0 +1,22 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Chat Uygulaması";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Chat Uygulamasına Hoş Geldiniz</h1>
+    <p class="lead">Web tabanlı mesajlaşma uygulaması</p>
+    <div class="mt-4">
+        <a href="/Login" class="btn btn-primary btn-lg">Giriş Yap</a>
+    </div>
+    <div class="mt-3">
+        <small class="text-muted">
+            API Endpoint'leri:<br/>
+            GET /api/ChatApi/messages?userId=1&otherId=2 - İki kullanıcı arasındaki mesajları getir<br/>
+            POST /api/ChatApi/message - Mesaj gönder (senderId, receiverId ile)<br/>
+            GET /api/ChatApi/users - Kullanıcıları getir<br/>
+            POST /api/ChatApi/user - Kullanıcı ekle/giriş yap<br/>
+        </small>
+    </div>
+</div>
