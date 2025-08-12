@@ -27,6 +27,59 @@ Bu proje, ağ güvenliği ve kriptografi konularında pratik deneyim kazanmak, f
 - Bootstrap 5
 - JavaScript (Fetch API)
 
+## Güvenlik Testleri ve Ağ Analizi
+
+### Wireshark ile Ağ Trafiği Dinleme
+
+Bu proje, ağ güvenliği konularında pratik deneyim kazanmak amacıyla geliştirilmiştir. Aşağıdaki güvenlik testleri gerçekleştirilmiştir:
+
+#### 1. Localhost İletişim Analizi
+- Farklı sanal makineler arasında localhost üzerinden iletişim
+- Wireshark ile HTTP trafiğinin dinlenmesi
+- Açık metin mesajların yakalanması
+
+#### 2. SSL/TLS Şifreleme Testleri
+- HTTPS protokolü ile güvenli iletişim
+- Şifreli trafiğin Wireshark ile analizi
+- Sertifika doğrulama süreçleri
+
+#### 3. MITM (Man-in-the-Middle) Saldırı Simülasyonu
+- 3 farklı sanal makine ile eş zamanlı çalışma
+- Ağ trafiğinin dinlenmesi ve manipülasyonu
+- Güvenlik açıklarının tespit edilmesi
+- **Saldırgan Makineler:** Kali Linux, Ubuntu ve macOS kullanılarak farklı işletim sistemlerinde saldırı vektörleri test edilmiştir
+
+### Güvenlik Test Ortamı
+
+- **Sanal Makine 1:** MetChat Sunucu (.NET Core)
+- **Sanal Makine 2:** MetChat İstemci (Web Browser)
+- **Saldırgan Makineler:** 
+  - **Kali Linux:** Penetrasyon testi araçları ve ağ analizi
+  - **Ubuntu:** Açık kaynak güvenlik araçları
+  - **macOS:** Cross-platform saldırı vektörleri
+- **Araçlar:** Wireshark, SSL/TLS test araçları, ağ protokol analizörleri
+
+### Test Senaryoları
+
+1. **Açık Metin Testi:** 
+   - HTTP üzerinden gönderilen mesajların yakalanması
+   - Wireshark ile plain text mesajların görüntülenmesi
+   - Ağ trafiğinde hassas bilgilerin açık şekilde aktarılması
+
+2. **Şifreli İletişim Testi:** 
+   - HTTPS ile korunan mesajların güvenliği
+   - Wireshark'da şifreli trafiğin analizi
+   - SSL/TLS protokolünün güvenlik katmanları
+
+3. **MITM Saldırı Testi:** 
+   - Ağ trafiğinin manipülasyonu ve güvenlik önlemleri
+   - Farklı işletim sistemlerinde saldırı vektörlerinin test edilmesi
+   - Cross-platform güvenlik açıklarının tespiti
+
+Bu testler sayesinde, modern web uygulamalarında güvenlik protokollerinin önemi ve uygulanması gereken güvenlik önlemleri pratik olarak öğrenilmiştir. Wireshark analizleri ile mesajların hem şifreli hem de şifresiz hallerinin nasıl görüntülendiği gözlemlenmiş, HTTP ve HTTPS protokollerinin arasındaki farklar net bir şekilde anlaşılmıştır. Farklı işletim sistemlerinde (Kali Linux, Ubuntu, macOS) gerçekleştirilen saldırı simülasyonları sayesinde, iletişim protokollerinin nasıl çalıştığı ve güvenlik açıklarının nasıl tespit edilebileceği konusunda kapsamlı bilgi sahibi olunmuştur.
+
+---
+
 ## Kurulum
 
 1. Projeyi klonlayın
@@ -167,55 +220,4 @@ dotnet ef database update
 ```bash
 dotnet ef database drop
 dotnet ef database update
-```
-
-## Güvenlik Testleri ve Ağ Analizi
-
-### Wireshark ile Ağ Trafiği Dinleme
-
-Bu proje, ağ güvenliği konularında pratik deneyim kazanmak amacıyla geliştirilmiştir. Aşağıdaki güvenlik testleri gerçekleştirilmiştir:
-
-#### 1. Localhost İletişim Analizi
-- Farklı sanal makineler arasında localhost üzerinden iletişim
-- Wireshark ile HTTP trafiğinin dinlenmesi
-- Açık metin mesajların yakalanması
-
-#### 2. SSL/TLS Şifreleme Testleri
-- HTTPS protokolü ile güvenli iletişim
-- Şifreli trafiğin Wireshark ile analizi
-- Sertifika doğrulama süreçleri
-
-#### 3. MITM (Man-in-the-Middle) Saldırı Simülasyonu
-- 3 farklı sanal makine ile eş zamanlı çalışma
-- Ağ trafiğinin dinlenmesi ve manipülasyonu
-- Güvenlik açıklarının tespit edilmesi
-- **Saldırgan Makineler:** Kali Linux, Ubuntu ve macOS kullanılarak farklı işletim sistemlerinde saldırı vektörleri test edilmiştir
-
-### Güvenlik Test Ortamı
-
-- **Sanal Makine 1:** MetChat Sunucu (.NET Core)
-- **Sanal Makine 2:** MetChat İstemci (Web Browser)
-- **Saldırgan Makineler:** 
-  - **Kali Linux:** Penetrasyon testi araçları ve ağ analizi
-  - **Ubuntu:** Açık kaynak güvenlik araçları
-  - **macOS:** Cross-platform saldırı vektörleri
-- **Araçlar:** Wireshark, SSL/TLS test araçları, ağ protokol analizörleri
-
-### Test Senaryoları
-
-1. **Açık Metin Testi:** 
-   - HTTP üzerinden gönderilen mesajların yakalanması
-   - Wireshark ile plain text mesajların görüntülenmesi
-   - Ağ trafiğinde hassas bilgilerin açık şekilde aktarılması
-
-2. **Şifreli İletişim Testi:** 
-   - HTTPS ile korunan mesajların güvenliği
-   - Wireshark'da şifreli trafiğin analizi
-   - SSL/TLS protokolünün güvenlik katmanları
-
-3. **MITM Saldırı Testi:** 
-   - Ağ trafiğinin manipülasyonu ve güvenlik önlemleri
-   - Farklı işletim sistemlerinde saldırı vektörlerinin test edilmesi
-   - Cross-platform güvenlik açıklarının tespiti
-
-Bu testler sayesinde, modern web uygulamalarında güvenlik protokollerinin önemi ve uygulanması gereken güvenlik önlemleri pratik olarak öğrenilmiştir. Wireshark analizleri ile mesajların hem şifreli hem de şifresiz hallerinin nasıl görüntülendiği gözlemlenmiş, HTTP ve HTTPS protokollerinin arasındaki farklar net bir şekilde anlaşılmıştır. Farklı işletim sistemlerinde (Kali Linux, Ubuntu, macOS) gerçekleştirilen saldırı simülasyonları sayesinde, iletişim protokollerinin nasıl çalıştığı ve güvenlik açıklarının nasıl tespit edilebileceği konusunda kapsamlı bilgi sahibi olunmuştur. 
+``` 
