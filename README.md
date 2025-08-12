@@ -1,5 +1,13 @@
 # Chat Uygulaması
 
+## Projenin Amacı
+
+Bu uygulama localhost'ta farklı makineler arasında iletişim için kurulmuştur. Sanal makineler arasında Wireshark ile dinleme etkinlikleri yapılmıştır. İlk önce local ile sonra da SSL ile şifreli metinler gösterilmiştir. Daha sonra MITM (Man-in-the-Middle) saldırısı için 3 farklı sanal makine ile eş zamanlı çalışmalar yapılmıştır.
+
+Bu proje, ağ güvenliği ve kriptografi konularında pratik deneyim kazanmak, farklı güvenlik protokollerinin nasıl çalıştığını anlamak ve güvenlik açıklarını tespit etmek amacıyla geliştirilmiştir.
+
+---
+
 .NET Core ile Razor Pages kullanılarak geliştirilmiş web tabanlı mesajlaşma uygulaması.
 
 ## Özellikler
@@ -159,4 +167,40 @@ dotnet ef database update
 ```bash
 dotnet ef database drop
 dotnet ef database update
-``` 
+```
+
+## Güvenlik Testleri ve Ağ Analizi
+
+### Wireshark ile Ağ Trafiği Dinleme
+
+Bu proje, ağ güvenliği konularında pratik deneyim kazanmak amacıyla geliştirilmiştir. Aşağıdaki güvenlik testleri gerçekleştirilmiştir:
+
+#### 1. Localhost İletişim Analizi
+- Farklı sanal makineler arasında localhost üzerinden iletişim
+- Wireshark ile HTTP trafiğinin dinlenmesi
+- Açık metin mesajların yakalanması
+
+#### 2. SSL/TLS Şifreleme Testleri
+- HTTPS protokolü ile güvenli iletişim
+- Şifreli trafiğin Wireshark ile analizi
+- Sertifika doğrulama süreçleri
+
+#### 3. MITM (Man-in-the-Middle) Saldırı Simülasyonu
+- 3 farklı sanal makine ile eş zamanlı çalışma
+- Ağ trafiğinin dinlenmesi ve manipülasyonu
+- Güvenlik açıklarının tespit edilmesi
+
+### Güvenlik Test Ortamı
+
+- **Sanal Makine 1:** MetChat Sunucu
+- **Sanal Makine 2:** MetChat İstemci
+- **Sanal Makine 3:** Saldırgan (MITM)
+- **Araçlar:** Wireshark, SSL/TLS test araçları
+
+### Test Senaryoları
+
+1. **Açık Metin Testi:** HTTP üzerinden gönderilen mesajların yakalanması
+2. **Şifreli İletişim Testi:** HTTPS ile korunan mesajların güvenliği
+3. **MITM Saldırı Testi:** Ağ trafiğinin manipülasyonu ve güvenlik önlemleri
+
+Bu testler sayesinde, modern web uygulamalarında güvenlik protokollerinin önemi ve uygulanması gereken güvenlik önlemleri pratik olarak öğrenilmiştir. 
